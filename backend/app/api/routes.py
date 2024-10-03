@@ -19,7 +19,6 @@ def recommend_recipes():
     calories = data.get('calories')
     time = data.get('time')
     keywords = data.get('keywords', [])
-    cooking_method = data.get('cooking_method')
 
     try:
         if calories is not None:
@@ -35,8 +34,21 @@ def recommend_recipes():
         ingredients=ingredients,
         calories=calories,
         time=time,
-        keywords=keywords,
-        cooking_method=cooking_method
+        keywords=keywords
     )
 
-    return jsonify([vars(recipe) for recipe in recommendations])
+    return jsonify([{
+        'RecipeId': recipe.RecipeId,
+        'Name': recipe.Name,
+        'RecipeCategory': recipe.RecipeCategory,
+        'RecipeIngredientParts': recipe.RecipeIngredientParts,
+        'Keywords': recipe.Keywords,
+        'Calories': recipe.Calories,
+        'TotalTime_minutes': recipe.TotalTime_minutes,
+        'AggregatedRating': recipe.AggregatedRating,
+        'ReviewCount': recipe.ReviewCount,
+        'Description': recipe.Description,
+        'RecipeIngredientQuantities': recipe.RecipeIngredientQuantities,
+        'RecipeInstructions': recipe.RecipeInstructions,
+        'Images': recipe.Images
+    } for recipe in recommendations])
