@@ -6,6 +6,7 @@ from ast import literal_eval
 from scipy.sparse import hstack, save_npz, load_npz
 from sklearn.preprocessing import MinMaxScaler
 from app.models.recipe import Recipe
+from app.services.image_search import ImageSearchService
 import joblib
 import os
 
@@ -19,6 +20,7 @@ class FlexibleRecipeRecommendationSystem:
         self.category_dummies = None
         self.scaler = None
         self.combined_matrix = None
+        self.image_search_service = ImageSearchService()
 
         if self.precomputed_files_exist():
             self.load_precomputed_data()
@@ -60,7 +62,7 @@ class FlexibleRecipeRecommendationSystem:
         save_npz(os.path.join(self.precomputed_dir, 'combined_matrix.npz'), self.combined_matrix)
 
     def preprocess_data(self):
-        list_columns = ['Keywords', 'RecipeIngredientParts']
+        list_columns = ['Keywords', 'RecipeIngredientParts', 'keywords_name']
         for col in list_columns:
             self.df[col] = self.df[col].apply(lambda x: literal_eval(x) if isinstance(x, str) else [])
 
@@ -73,7 +75,7 @@ class FlexibleRecipeRecommendationSystem:
         tfidf_matrix_ingredients = self.tfidf_vectorizer_ingredients.fit_transform(self.df['RecipeIngredientParts'].apply(lambda x: ' '.join(x)))
 
         self.tfidf_vectorizer_keywords = TfidfVectorizer(stop_words='english')
-        tfidf_matrix_keywords = self.tfidf_vectorizer_keywords.fit_transform(self.df['Keywords'].apply(lambda x: ' '.join(x)))
+        tfidf_matrix_keywords = self.tfidf_vectorizer_keywords.fit_transform(self.df['keywords_name'].apply(lambda x: ' '.join(x)))
 
         self.category_dummies = pd.get_dummies(self.df['RecipeCategory'])
         category_matrix = self.category_dummies.values
@@ -93,14 +95,15 @@ class FlexibleRecipeRecommendationSystem:
             numerical_matrix
         ])
 
-    def get_recommendations(self, category=None, dietary_preference=None, ingredients=None, calories=None, time=None, keywords=None, cooking_method=None, top_n=5):
-        query_vector = self.create_query_vector(category, dietary_preference, ingredients, calories, time, keywords, cooking_method)
+    def get_recommendations(self, category=None, dietary_preference=None, ingredients=None, calories=None, time=None, keywords=None, top_n=5):
+        query_vector = self.create_query_vector(category, dietary_preference, ingredients, calories, time, keywords)
         similarity_scores = cosine_similarity(query_vector, self.combined_matrix).flatten()
         top_indices = similarity_scores.argsort()[-top_n:][::-1]
 
         results = []
         for idx in top_indices:
             recipe = self.df.iloc[idx]
+            image_urls = self.image_search_service.search_recipe_images(recipe['Name'], 3)  # Get 3 image URLs for each recipe
             results.append(Recipe(
                 RecipeId=int(recipe['RecipeId']),
                 Name=recipe['Name'],
@@ -110,45 +113,59 @@ class FlexibleRecipeRecommendationSystem:
                 Calories=float(recipe['Calories']),
                 TotalTime_minutes=int(recipe['TotalTime_minutes']),
                 AggregatedRating=float(recipe['AggregatedRating']),
-                ReviewCount=int(recipe['ReviewCount'])
+                ReviewCount=int(recipe['ReviewCount']),
+                Description=recipe['Description'],
+                RecipeIngredientQuantities=recipe['RecipeIngredientQuantities'],
+                RecipeInstructions=recipe['RecipeInstructions'],
+                Images=image_urls
             ))
 
         results.sort(key=lambda x: (x.AggregatedRating, x.ReviewCount), reverse=True)
         return results
 
-    def create_query_vector(self, category=None, dietary_preference=None, ingredients=None, calories=None, time=None, keywords=None, cooking_method=None):
+    def create_query_vector(self, category=None, dietary_preference=None, ingredients=None, calories=None, time=None, keywords=None):
         query_vector = np.zeros((1, self.combined_matrix.shape[1]))
 
         if ingredients:
             ingredient_query = self.tfidf_vectorizer_ingredients.transform([' '.join(ingredients)])
             query_vector[:, :ingredient_query.shape[1]] = ingredient_query.toarray()
 
-        if keywords or cooking_method:
-            all_keywords = keywords or []
-            if cooking_method:
-                all_keywords.append(cooking_method)
-            keyword_query = self.tfidf_vectorizer_keywords.transform([' '.join(all_keywords)])
+        if keywords:
+            keyword_query = self.tfidf_vectorizer_keywords.transform([' '.join(keywords)])
             start = ingredient_query.shape[1] if ingredients else 0
             end = start + keyword_query.shape[1]
             query_vector[:, start:end] = keyword_query.toarray()
 
         if category:
             if category in self.category_dummies.columns:
-                start = (ingredient_query.shape[1] if ingredients else 0) + (keyword_query.shape[1] if keywords or cooking_method else 0)
+                start = (ingredient_query.shape[1] if ingredients else 0) + (keyword_query.shape[1] if keywords else 0)
                 category_index = self.category_dummies.columns.get_loc(category)
                 query_vector[:, start + category_index] = 1
 
         if dietary_preference:
             dietary_columns = ['is_vegetarian', 'is_vegan', 'is_gluten free', 'is_dairy free', 'is_low carb', 'is_keto', 'is_paleo']
             if dietary_preference in dietary_columns:
-                start = (ingredient_query.shape[1] if ingredients else 0) + (keyword_query.shape[1] if keywords or cooking_method else 0) + self.category_dummies.shape[1]
+                start = (ingredient_query.shape[1] if ingredients else 0) + (keyword_query.shape[1] if keywords else 0) + self.category_dummies.shape[1]
                 dietary_index = dietary_columns.index(dietary_preference)
                 query_vector[:, start + dietary_index] = 1
 
-        start = (ingredient_query.shape[1] if ingredients else 0) + (keyword_query.shape[1] if keywords or cooking_method else 0) + self.category_dummies.shape[1] + len(dietary_columns)
+        start = (ingredient_query.shape[1] if ingredients else 0) + (keyword_query.shape[1] if keywords else 0) + self.category_dummies.shape[1] + len(dietary_columns)
         if calories is not None:
             query_vector[:, start] = self.scaler.transform([[calories, 0, 0, 0]])[0][0]
         if time is not None:
             query_vector[:, start + 1] = self.scaler.transform([[0, time, 0, 0]])[0][1]
 
         return query_vector
+
+    def get_image_urls(self, recipe_name, num_images=3):
+        api_key = "YOUR_BING_API_KEY"  # Replace with your Bing Search API key
+        search_url = "https://api.bing.microsoft.com/v7.0/images/search"
+        headers = {"Ocp-Apim-Subscription-Key": api_key}
+        params = {"q": f"{recipe_name} recipe", "count": num_images, "license": "public", "imageType": "photo"}
+        
+        response = requests.get(search_url, headers=headers, params=params)
+        response.raise_for_status()
+        search_results = response.json()
+        
+        image_urls = [img["contentUrl"] for img in search_results["value"][:num_images]]
+        return image_urls
