@@ -12,3 +12,7 @@ class Recipe:
     TotalTime_minutes: int
     AggregatedRating: float
     ReviewCount: int
+    Description: str
+    RecipeIngredientQuantities: List[str]
+    RecipeInstructions: List[str]
+    Images: List[str]
