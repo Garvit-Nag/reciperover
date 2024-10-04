@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from app.models.recipe import Recipe
 import json
+
 api_bp = Blueprint('api', __name__)
 
 @api_bp.route('/form-data', methods=['GET'])
@@ -10,7 +11,7 @@ def get_form_data():
     return jsonify(data)
 
 @api_bp.route('/recommend', methods=['POST'])
-async def recommend_recipes():
+def recommend_recipes():
     data = request.json
     category = data.get('category')
     dietary_preference = data.get('dietary_preference')
@@ -18,6 +19,7 @@ async def recommend_recipes():
     calories = data.get('calories')
     time = data.get('time')
     keywords = data.get('keywords', [])
+    cooking_method = data.get('cooking_method')
 
     try:
         if calories is not None:
@@ -27,28 +29,14 @@ async def recommend_recipes():
     except ValueError:
         return jsonify({"error": "Calories and time must be integers if provided"}), 400
 
-    # Await the async function
-    recommendations = await current_app.recommendation_system.get_recommendations(
+    recommendations = current_app.recommendation_system.get_recommendations(
         category=category,
         dietary_preference=dietary_preference,
         ingredients=ingredients,
         calories=calories,
         time=time,
-        keywords=keywords
+        keywords=keywords,
+        cooking_method=cooking_method
     )
 
-    return jsonify([{
-        'RecipeId': recipe.RecipeId,
-        'Name': recipe.Name,
-        'RecipeCategory': recipe.RecipeCategory,
-        'RecipeIngredientParts': recipe.RecipeIngredientParts,
-        'Keywords': recipe.Keywords,
-        'Calories': recipe.Calories,
-        'TotalTime_minutes': recipe.TotalTime_minutes,
-        'AggregatedRating': recipe.AggregatedRating,
-        'ReviewCount': recipe.ReviewCount,
-        'Description': recipe.Description,
-        'RecipeIngredientQuantities': recipe.RecipeIngredientQuantities,
-        'RecipeInstructions': recipe.RecipeInstructions,
-        'Images': recipe.Images
-    } for recipe in recommendations])
+    return jsonify([vars(recipe) for recipe in recommendations])
