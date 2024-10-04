@@ -29,7 +29,7 @@ class BaseScraper(ABC):
 
     async def verify_image_url(self, url: str) -> bool:
         try:
-            async with self.session.head(url, allow_redirects=True, timeout=30) as response:
+            async with self.session.head(url, allow_redirects=True, timeout=60) as response:
                 content_type = response.headers.get('content-type', '')
                 return (response.status == 200 and 
                        'image' in content_type and 
