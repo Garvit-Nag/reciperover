@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from app.models.recipe import Recipe
 import json
+import asyncio
 
 api_bp = Blueprint('api', __name__)
 
@@ -11,7 +12,7 @@ def get_form_data():
     return jsonify(data)
 
 @api_bp.route('/recommend', methods=['POST'])
-def recommend_recipes():
+async def recommend_recipes():  # Make this function async
     data = request.json
     category = data.get('category')
     dietary_preference = data.get('dietary_preference')
@@ -19,7 +20,7 @@ def recommend_recipes():
     calories = data.get('calories')
     time = data.get('time')
     keywords = data.get('keywords', [])
-    cooking_method = data.get('cooking_method')
+    keywords_name = data.get('keywords_name', [])
 
     try:
         if calories is not None:
@@ -29,14 +30,15 @@ def recommend_recipes():
     except ValueError:
         return jsonify({"error": "Calories and time must be integers if provided"}), 400
 
-    recommendations = current_app.recommendation_system.get_recommendations(
+    # Use await to call the async function
+    recommendations = await current_app.recommendation_system.get_recommendations(
         category=category,
         dietary_preference=dietary_preference,
         ingredients=ingredients,
         calories=calories,
         time=time,
         keywords=keywords,
-        cooking_method=cooking_method
+        keywords_name=keywords_name
     )
 
     return jsonify([vars(recipe) for recipe in recommendations])
