@@ -4,13 +4,11 @@ import aiohttp
 import random
 import re
 from typing import List, Union
-from app.utils.scrapers import (
-    GoogleScraper,
-    FoodNetworkScraper,
-    AllRecipesScraper,
-    WikimediaScraper,
-    FoodDotComScraper  
-)
+from app.utils.scrapers.google_scraper import GoogleScraper
+from app.utils.scrapers.food_network_scraper import FoodNetworkScraper
+from app.utils.scrapers.allrecipes_scraper import AllRecipesScraper
+from app.utils.scrapers.wikimedia_scraper import WikimediaScraper
+from app.utils.scrapers.fooddotcom_scraper import FoodDotComScraper
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +29,6 @@ class ImageSearchService:
         ]
 
     async def __aenter__(self):
-        """Async context manager entry"""
         if self.session is None:
             self.session = aiohttp.ClientSession()
             for scraper in self.scrapers:
@@ -40,7 +37,6 @@ class ImageSearchService:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit"""
         if self.session:
             await self.session.close()
             self.session = None
