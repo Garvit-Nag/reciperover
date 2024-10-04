@@ -74,7 +74,7 @@ function formatDuration(duration: string) {
                 ))}
             </div>
         </div>
-        <div className='mt-20 text-center'>
+        <div className='mt-16 mb-2 text-center'>
             <Link href={'/recipes'} className='px-4 py-2 rounded border border-neutral-600 text-neutral-700 bg-white hover:bg-gray-100 transition duration-200'>
                 View All Recipes
             </Link>
