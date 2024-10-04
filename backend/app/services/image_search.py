@@ -61,7 +61,7 @@ class ImageSearchService:
                 tasks.append(task)
             
             logger.info(f"Created {len(tasks)} scraper tasks")
-            done, pending = await asyncio.wait(tasks, timeout=30)
+            done, pending = await asyncio.wait(tasks, timeout=60)
             
             for task in pending:
                 logger.warning(f"Cancelling pending task for {task.get_coro().__name__}")
