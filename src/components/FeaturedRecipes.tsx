@@ -44,7 +44,7 @@ function formatDuration(duration: string) {
     }
 
   return (
-    <div className='py-12 bg-gray-900'>
+    <div className='py-12' style={{background:'#0f172a'}}>
         <div>
             <div className="text-center">
                 <h2 className='text-base text-teal-600 font-semibold tracking wide uppercase'>
