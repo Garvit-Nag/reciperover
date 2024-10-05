@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Select from 'react-select';
+import Link from "next/link";
 
 interface FormData {
   categories: string[];
@@ -310,12 +311,14 @@ const RecipeRecommendationForm: React.FC = () => {
         </div>
 
         <div className="flex justify-center">
-          <button
-            type="submit"
-            className="w-80 py-2 text-white bg-indigo-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:bg-indigo-500 mx-auto"
-          >
-            Get Recommendations
-          </button>
+          <Link href={'/recommended_recipes'}>
+            <button
+              type="submit"
+              className="w-80 py-2 text-white bg-indigo-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:bg-indigo-500 mx-auto"
+            >
+              Get Recommendations
+            </button>
+          </Link>
         </div>
       </form>
     </div>
