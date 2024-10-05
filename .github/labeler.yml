@@ -1,0 +1,26 @@
+# Assign labels based on file changes
+
+# Label for frontend changes
+"frontend":
+  - "src/app/**"
+  - "src/components/**"
+  - "src/pages/**"
+  - "*.tsx"
+  - "*.js"
+  - "*.css"
+  - "*.json"
+
+# Label for backend changes
+"backend":
+  - "backend/**"
+  - "*.py"
+  - "*.json"
+
+# Label for config changes
+"config":
+  - "*.mjs"
+  - "*.ts"
+  - "tailwind.config.ts"
+  - "tsconfig.json"
+  - ".eslintrc.json"
+  - ".gitignore"
