@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Select from 'react-select';
+import Link from "next/link";
 
 interface FormData {
   categories: string[];
@@ -24,7 +25,7 @@ interface FormData {
 const RecipeRecommendationForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData | null>(null);
   const [category, setCategory] = useState("");
-  const [dietaryPreference, setDietaryPreference] = useState("");
+  const [dietaryPreference, setDietaryPreference] = useState<string[]>([]); 
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [calories, setCalories] = useState(0);
   const [time, setTime] = useState(0);
@@ -58,7 +59,7 @@ const RecipeRecommendationForm: React.FC = () => {
   useEffect(() => {
     if (category && formData) {
       setAvailableDietaryPreferences(formData.dietary_preferences[category] || []);
-      setDietaryPreference("");
+      setDietaryPreference([]);
       setIngredients([]);
       if (formData.calorie_ranges && formData.calorie_ranges[category]) {
         setCalorieRange(formData.calorie_ranges[category]);
@@ -78,17 +79,18 @@ const RecipeRecommendationForm: React.FC = () => {
   }, [category, formData]);
 
   useEffect(() => {
-    if (category && dietaryPreference && formData && formData.ingredients) {
-      setAvailableIngredients(formData.ingredients[category]?.[dietaryPreference] || []);
-      setIngredients([]);
+    if (category && dietaryPreference.length > 0 && formData && formData.ingredients) {
+      const mergedIngredients = dietaryPreference.flatMap(
+        (preference) => formData.ingredients[category]?.[preference] || []
+      );
+      
+      // A Set to ensure unique values.
+      const uniqueIngredients = [...new Set(mergedIngredients)];
+      
+      setAvailableIngredients(uniqueIngredients);
+      setIngredients([]); 
     }
-  }, [category, dietaryPreference, formData]);
-
-  const handleIngredientChange = (ingredient: string) => {
-    setIngredients((prev) =>
-      prev.includes(ingredient) ? prev.filter((i) => i !== ingredient) : [...prev, ingredient]
-    );
-  };
+  }, [category, dietaryPreference, formData]);   
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,18 +158,19 @@ const RecipeRecommendationForm: React.FC = () => {
 
         <div>
           <label htmlFor="dietaryPreference" className="block text-sm text-gray-300">
-            Dietary Preference
+            Dietary Preferences
           </label>
           <Select
             id="dietaryPreference"
             value={availableDietaryPreferences
-              .map((pref) => ({ value: pref, label: pref }))
-              .find((option) => option.value === dietaryPreference)} 
-            onChange={(option) => setDietaryPreference(option?.value || "")}
+              .filter((pref) => dietaryPreference.includes(pref))
+              .map((pref) => ({ value: pref, label: pref }))}  // Map selected options
+            onChange={(options) => setDietaryPreference(options ? options.map((option) => option.value) : [])}
             options={availableDietaryPreferences.map((pref) => ({
               value: pref,
               label: pref,
             }))}
+            isMulti // Enables multiple selection.
             isDisabled={!category} 
             className="mt-2 block w-full"
             styles={{
@@ -180,9 +183,22 @@ const RecipeRecommendationForm: React.FC = () => {
                   borderColor: "#4B5563", 
                 },
               }),
-              singleValue: (provided) => ({
+              multiValue: (provided) => ({
+                ...provided,
+                backgroundColor: "#374151",
+                color: "#FFFFFF",
+              }),
+              multiValueLabel: (provided) => ({
                 ...provided,
                 color: "#FFFFFF", 
+              }),
+              multiValueRemove: (provided) => ({
+                ...provided,
+                color: "#FFFFFF",
+                ":hover": {
+                  backgroundColor: "#FF5A5F", 
+                  color: "#FFFFFF",
+                },
               }),
               menu: (provided) => ({
                 ...provided,
@@ -195,41 +211,86 @@ const RecipeRecommendationForm: React.FC = () => {
                 "&:hover": {
                   backgroundColor: "#374151", 
                 },
-                color: "#FFFFFF",
+                color: "#FFFFFF", 
               }),
             }}
           />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-300">Ingredients</label>
-          <div className="mt-2 space-y-4"> 
-            {availableIngredients.map((ingredient) => (
-              <label key={ingredient} className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  checked={ingredients.includes(ingredient)}
-                  onChange={() => handleIngredientChange(ingredient)}
-                  className="form-checkbox h-4 w-4 text-indigo-400 bg-gray-800 rounded"
-                />
-                <span className="ml-1 mr-4 text-gray-300">{ingredient}</span>
-              </label>
-            ))}
-          </div>
+          <label htmlFor="ingredients" className="block text-sm text-gray-300">
+            Ingredients
+          </label>
+          <Select
+            id="ingredients"
+            value={availableIngredients
+              .filter((ingredient) => ingredients.includes(ingredient))
+              .map((ingredient) => ({ value: ingredient, label: ingredient }))} 
+            onChange={(options) => setIngredients(options ? options.map((option) => option.value) : [])} 
+            options={availableIngredients.map((ingredient) => ({
+              value: ingredient,
+              label: ingredient,
+            }))}
+            isMulti
+            isDisabled={!category} 
+            className="mt-2 block w-full"
+            styles={{
+              control: (provided) => ({
+                ...provided,
+                backgroundColor: "#1F2937", 
+                color: "#FFFFFF", 
+                borderColor: "#6B7280", 
+                "&:hover": {
+                  borderColor: "#4B5563", 
+                },
+              }),
+              multiValue: (provided) => ({
+                ...provided,
+                backgroundColor: "#374151", 
+                color: "#FFFFFF",
+              }),
+              multiValueLabel: (provided) => ({
+                ...provided,
+                color: "#FFFFFF",
+              }),
+              multiValueRemove: (provided) => ({
+                ...provided,
+                color: "#FFFFFF", 
+                ":hover": {
+                  backgroundColor: "#FF5A5F", 
+                  color: "#FFFFFF",
+                },
+              }),
+              menu: (provided) => ({
+                ...provided,
+                backgroundColor: "#1F2937", 
+                color: "#FFFFFF", 
+              }),
+              option: (provided, state) => ({
+                ...provided,
+                backgroundColor: state.isSelected ? "#374151" : "#1F2937", 
+                "&:hover": {
+                  backgroundColor: "#374151", 
+                },
+                color: "#FFFFFF", 
+              }),
+            }}
+            maxMenuHeight={150} 
+          />
         </div>
 
         <div>
           <label htmlFor="calories" className="block text-sm text-gray-300">
-            Calories: {calories}
+            Calories ({calories})
           </label>
           <input
-            type="range"
             id="calories"
+            type="range"
             min={calorieRange.min}
             max={calorieRange.max}
             value={calories}
-            onChange={(e) => setCalories(Number(e.target.value))}
-            className="mt-2 w-full h-2 bg-gray-600 rounded-lg focus:outline-none"
+            onChange={(e) => setCalories(parseInt(e.target.value, 10))}
+            className="mt-2 w-full"
           />
         </div>
 
@@ -250,12 +311,14 @@ const RecipeRecommendationForm: React.FC = () => {
         </div>
 
         <div className="flex justify-center">
-          <button
-            type="submit"
-            className="w-80 py-2 text-white bg-indigo-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:bg-indigo-500 mx-auto"
-          >
-            Get Recommendations
-          </button>
+          <Link href={'/recommended_recipes'}>
+            <button
+              type="submit"
+              className="w-80 py-2 text-white bg-indigo-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:bg-indigo-500 mx-auto"
+            >
+              Get Recommendations
+            </button>
+          </Link>
         </div>
       </form>
     </div>
