@@ -76,12 +76,12 @@ function Navbar({ className }: { className?: string }) {
           </div>
         
           <div className="flex items-center space-x-8">
-            <Link href={"/login"}>
+            <Link href={"/"}>
               <div className="flex items-center justify-center space-y-4 text-lg rounded-lg">
                 LogIn 
               </div>
             </Link>
-            <Link href={"/signup"}>
+            <Link href={"/"}>
               <div className="flex items-center text-black justify-center space-y-4 text-lg border-2 bg-white px-4 py-2 rounded-lg">
                 SignUp
               </div>

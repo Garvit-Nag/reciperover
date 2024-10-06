@@ -13,7 +13,7 @@ function Footer() {
             <ul>
               <li>
                 <a
-                  href="#"
+                  href="/"
                   className="hover:text-white transition-colors duration-300"
                 >
                   Home
@@ -21,7 +21,7 @@ function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/about"
                   className="hover:text-white transition-colors duration-300"
                 >
                   About
@@ -37,10 +37,10 @@ function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="mailto:gurmeharsinghv@gmail.com"
                   className="hover:text-white transition-colors duration-300"
                 >
-                  Contact
+                  Mail Us
                 </a>
               </li>
             </ul>
@@ -49,19 +49,13 @@ function Footer() {
             <h2 className="text-white text-lg font-semibold mb-4">Follow Us</h2>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://github.com/Garvit-Nag/reciperover"
                 className="hover:text-white transition-colors duration-300"
               >
-                Facebook
+                Github
               </a>
               <a
-                href="#"
-                className="hover:text-white transition-colors duration-300"
-              >
-                Twitter
-              </a>
-              <a
-                href="#"
+                href="https://www.instagram.com/_gsv_._/"
                 className="hover:text-white transition-colors duration-300"
               >
                 Instagram
@@ -70,10 +64,11 @@ function Footer() {
           </div>
           <div>
             <h2 className="text-white text-lg font-semibold mb-4">Contact Us</h2>
-            <p>New Delhi, India</p>
-            <p>Delhi 10001</p>
-            <p>Email: info@musicschool.com</p>
-            <p>Phone: (123) 456-7890</p>
+            <p>Punjab, India</p>
+            <p>Mohali 160055</p>
+            <p>gurmeharsinghv@gmail.com</p>
+            <p>+91 98779 26632</p>
+            {/* <p>or +91 62390 89128</p> */}
           </div>
           </div>
           <p className="text-center text-xs pt-8">© 2024 Recipe Rover. All rights reserved.</p>
