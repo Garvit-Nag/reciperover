@@ -6,7 +6,6 @@ import InstructionsOfRecipes from "@/components/InstructionsOfRecipes";
 import InstructionTestimonialCards from "@/components/InstructionTestimonialCards";
 import Navbar from "@/components/Navbar";
 import RecipeRecommendationForm from "@/components/RecommendationsForm";
-import Search from "@/pages/search";
 
 export default function Home() {
   return (
