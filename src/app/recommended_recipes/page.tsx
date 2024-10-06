@@ -25,6 +25,30 @@ const sampleRecipes = [
     calories: 450,
     time: 40,
   },
+  {
+    name: "Grilled Chicken Salad",
+    rating: 4.5,
+    imageUrl: "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/58/picY2Aqui.jpg",
+    description: "A light, healthy chicken salad.",
+    calories: 250,
+    time: 15,
+  },
+  {
+    name: "Beef Steak with Vegetables",
+    rating: 4.8,
+    imageUrl: "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/38/AFPDDHATWzQ0b1CDpDAT_255%20berry%20blue%20frzn%20dess.jpg",
+    description: "Juicy beef steak served with veggies.",
+    calories: 450,
+    time: 40,
+  },
+  {
+    name: "Grilled Chicken Salad",
+    rating: 4.5,
+    imageUrl: "https://img.sndimg.com/food/image/upload/w_555,h_416,c_fit,fl_progressive,q_95/v1/img/recipes/58/picY2Aqui.jpg",
+    description: "A light, healthy chicken salad.",
+    calories: 250,
+    time: 15,
+  }
   // Add more recipes as needed
 ];
 
@@ -39,7 +63,7 @@ interface Recipe {
 
 const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
   return (
-    <div className="relative w-full max-w-sm mx-auto shadow-lg rounded-lg overflow-hidden">
+    <div className="relative w-full max-w-sm mx-auto shadow-white rounded-md shadow-md overflow-hidden">
       <div className="relative h-64">
         {/* Recipe Image as Background */}
         <img
@@ -53,18 +77,18 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
         </div>
         {/* Gradient Overlay and Recipe Name */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
         </div>
         <div className="absolute bottom-0 left-0 text-white p-3 text-lg font-semibold">
           {recipe.name}
         </div>
       </div>
       {/* Recipe Description, Calories and Time */}
-      <div className="p-4 bg-white">
-        <p className="text-gray-700 text-sm mb-2">{recipe.description}</p>
-        <div className="flex justify-between text-sm font-semibold text-gray-800">
-          <span>Calories: {recipe.calories}</span>
-          <span>Time: {recipe.time} mins</span>
+      <div className="p-4 bg-black">
+        <p className="text-white text-sm mb-2">{recipe.description}</p>
+        <div className="flex justify-between text-sm font-semibold text-white">
+          <span>🔥{recipe.calories} Calories</span>
+          <span>⏳{recipe.time} mins</span>
         </div>
       </div>
     </div>
@@ -86,8 +110,8 @@ const RecipeList: React.FC<{ recipes: Recipe[] | undefined }> = ({ recipes }) =>
         )}
       </div>
       {/* Arrow Button to Explore More */}
-      <div className="text-center mt-6">
-        <button className="bg-black text-white px-6 py-2 rounded-md">
+      <div className="text-center mt-10">
+        <button className="bg-white text-black px-6 py-2 rounded-md">
           Explore More
         </button>
       </div>
@@ -98,8 +122,8 @@ const RecipeList: React.FC<{ recipes: Recipe[] | undefined }> = ({ recipes }) =>
 // Define a functional component to render the RecipeList
 const RecommendedRecipesPage: React.FC = () => {
   return (
-    <div>
-      <h1 className="text-center text-3xl font-bold mb-8">Recommended Recipes</h1>
+    <div className="inset-0 h-full w-full bg-black bg-[linear-gradient(to_right,#80808055_1px,transparent_1px),linear-gradient(to_bottom,#80808055_1px,transparent_1px)] bg-[size:20px_20px]">
+      <h1 className="text-center text-3xl font-bold py-6 text-white underline">Recommended Recipes</h1>
       <RecipeList recipes={sampleRecipes} />
     </div>
   );
