@@ -60,12 +60,12 @@ function formatDuration(duration: string) {
                 {mainRecipes.map((recipe:Recipe)=> (
                     <div key={recipe.RecipeId} className="flex justify-center">
                         <BackgroundGradient className='flex flex-col rounded-[22px] bg-white dark:bg-zinc-900 overflow-hidden h-full max-w-sm'>
-                            <div className='bg-black p-4 bg-neutral-900 sm:p-6 flex flex-col items-center text-center flex-grow'>
-                                <p className='text-lg sm:text-xl text-white mt-4 mb-2 text-neutral-200'>{recipe.Name}</p>
-                                <p className='text-sm text-white text-neutral-600 text-neutral-400 flex-grow'>{recipe.Description}</p>
-                                <p className='text-sm mt-5 text-white text-neutral-600 text-neutral flex-grow'>Duration: {formatDuration(recipe.TotalTime)}</p>
-                                <p className='text-sm mt-5 text-white text-neutral-600 text-neutral flex-grow'>Rating: {recipe.AggregatedRating}/5</p>
-                                <Link className='text-sm text-white mt-5 text-neutral-600 text-neutral flex-grow border border-gray-300 rounded-md px-3 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800' href={'https://www.food.com/'}>
+                            <div className='p-4 bg-neutral-900 sm:p-6 flex flex-col items-center text-center flex-grow'>
+                                <p className='text-lg sm:text-xl text-white mt-4 mb-2'>{recipe.Name}</p>
+                                <p className='text-sm text-white flex-grow'>{recipe.Description}</p>
+                                <p className='text-sm mt-5 text-white text-neutral flex-grow'>Duration: {formatDuration(recipe.TotalTime)}</p>
+                                <p className='text-sm mt-5 text-white text-neutral flex-grow'>Rating: {recipe.AggregatedRating}/5</p>
+                                <Link className='text-sm text-white mt-5 text-neutral flex-grow border border-gray-300 rounded-md px-3 py-2 hover:bg-gray-100 dark:hover:bg-neutral-800' href={'https://www.food.com/'}>
                                     Learn More
                                 </Link>
                             </div>
