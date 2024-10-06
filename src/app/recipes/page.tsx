@@ -4,12 +4,12 @@ import React from "react";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import recipeData from "@/data/recipes.json"
 import Link from "next/link";
-import Navbar2 from "@/components/Navbar2";
+import Navbar from "@/components/Navbar";
 
 function page() {
   return (
     <div className="min-h-screen bg-black py-12 pt-36">
-        <Navbar2/>
+        <Navbar/>
         <h1 className="text-lg md:text-7xl text-center font-sans font-bold mb-8 text-white">All recipes({recipeData.recipes.length})</h1>  
         <div className="flex flex-wrap justify-center">
             {recipeData.recipes.map((recipe) => (
