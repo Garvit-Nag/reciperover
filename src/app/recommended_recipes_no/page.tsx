@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRecommendations } from '../../context/RecommendationContext'; // Adjust the path as needed
 
 // Sample Recipes Data
 const sampleRecipes = [
@@ -134,10 +135,15 @@ const RecipeList: React.FC<{ recipes: Recipe[] }> = ({ recipes }) => {
 
 // Parent Component
 const RecommendedRecipesPage: React.FC = () => {
+  const { recommendations } = useRecommendations();
   return (
-    <div className="inset-0 h-full w-full bg-black bg-[linear-gradient(to_right,#80808055_1px,transparent_1px),linear-gradient(to_bottom,#80808055_1px,transparent_1px)] bg-[size:20px_20px] min-h-screen">
-      <h1 className="text-center text-3xl font-bold py-6 text-white underline">Recommended Recipes</h1>
-      <RecipeList recipes={sampleRecipes} />
+    <div>
+      <h1>Recommended Recipes</h1>
+      <ul>
+        {recommendations.map((recipe, index) => (
+          <li key={index}>{recipe.name}</li> // Adjust to your recipe structure
+        ))}
+      </ul>
     </div>
   );
 };
