@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Select from 'react-select';
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface FormData {
   categories: string[];
@@ -23,12 +24,15 @@ interface FormData {
 }
 
 const RecipeRecommendationForm: React.FC = () => {
+  // const router = useRouter();
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData | null>(null);
   const [category, setCategory] = useState("");
-  const [dietaryPreference, setDietaryPreference] = useState<string[]>([]); 
+  const [dietaryPreference, setDietaryPreference] = useState<string[]>([]);
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [calories, setCalories] = useState(0);
   const [time, setTime] = useState(0);
+  const [isMounted, setIsMounted] = useState(false); // New state to track mounting
 
   const [availableDietaryPreferences, setAvailableDietaryPreferences] = useState<string[]>([]);
   const [availableIngredients, setAvailableIngredients] = useState<string[]>([]);
@@ -38,6 +42,10 @@ const RecipeRecommendationForm: React.FC = () => {
   const categoryOptions = formData
     ? formData.categories.map((cat) => ({ value: cat, label: cat }))
     : [];
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     async function fetchFormData() {
@@ -92,9 +100,43 @@ const RecipeRecommendationForm: React.FC = () => {
     }
   }, [category, dietaryPreference, formData]);   
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ category, dietaryPreference, ingredients, calories, time });
+    console.log("Form submitted!");
+    
+    if (!isMounted) {
+      return;
+    }
+  
+    const formPayload = {
+      category,
+      dietary_preference: dietaryPreference,
+      ingredients,
+      calories,
+      time,
+    };
+    
+    console.log("Form Payload: ", formPayload);
+  
+    try {
+      const response = await fetch("http://127.0.0.1:5000/recommend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formPayload),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to submit form");
+      }
+      
+      const recommendations = await response.json();
+      sessionStorage.setItem('recommendations', JSON.stringify(recommendations));
+      router.push('/recommendations');
+    } catch (error) {
+      console.error("Error submitting the form:", error);
+    }
   };
 
   if (!formData) {
@@ -311,14 +353,14 @@ const RecipeRecommendationForm: React.FC = () => {
         </div>
 
         <div className="flex justify-center">
-          <Link href={'/recommended_recipes'}>
+          {/* <Link href={'/recommended_recipes'}> */}
             <button
               type="submit"
               className="w-80 py-2 text-white bg-indigo-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:bg-indigo-500 mx-auto"
             >
               Get Recommendations
             </button>
-          </Link>
+          {/* </Link> */}
         </div>
       </form>
     </div>
