@@ -43,7 +43,7 @@
             "RecipeId": 41,
             "Name": "Biryani hai",
             "AuthorId": 1534,
-            "AuthorName": "Dancer",
+            "AuthorName": "Dancer 0",
             "CookTime": "PT24H",
             "PrepTime": "PT45M",
             "TotalTime": "PT24H45M",
@@ -116,7 +116,7 @@
             "RecipeInstructions": "Toss 2 cups berries with sugar. Let stand for 45 minutes, stirring occasionally. Transfer berry-sugar mixture to food processor. Add yogurt and process until smooth. Strain through fine sieve. Pour into baking pan (or transfer to ice cream maker and process according to manufacturers' directions). Freeze uncovered until edges are solid but centre is soft. Transfer to processor and blend until smooth again. Return to pan and freeze until edges are solid. Transfer to processor and blend until smooth again. Fold in remaining 2 cups of blueberries. Pour into plastic mold and freeze overnight. Let soften slightly to serve."
         },
         {
-            "RecipeId": 40,
+            "RecipeId": 42,
             "Name": "Biryani 2.0",
             "AuthorId": 1533,
             "AuthorName": "Dancer 2",
@@ -154,7 +154,7 @@
             "RecipeInstructions": "Toss 2 cups berries with sugar. Let stand for 45 minutes, stirring occasionally. Transfer berry-sugar mixture to food processor. Add yogurt and process until smooth. Strain through fine sieve. Pour into baking pan (or transfer to ice cream maker and process according to manufacturers' directions). Freeze uncovered until edges are solid but centre is soft. Transfer to processor and blend until smooth again. Return to pan and freeze until edges are solid. Transfer to processor and blend until smooth again. Fold in remaining 2 cups of blueberries. Pour into plastic mold and freeze overnight. Let soften slightly to serve."
         },
         {
-            "RecipeId": 40,
+            "RecipeId": 48,
             "Name": "Biryani 2.0",
             "AuthorId": 1533,
             "AuthorName": "Dancer 3",
@@ -192,7 +192,7 @@
             "RecipeInstructions": "Toss 2 cups berries with sugar. Let stand for 45 minutes, stirring occasionally. Transfer berry-sugar mixture to food processor. Add yogurt and process until smooth. Strain through fine sieve. Pour into baking pan (or transfer to ice cream maker and process according to manufacturers' directions). Freeze uncovered until edges are solid but centre is soft. Transfer to processor and blend until smooth again. Return to pan and freeze until edges are solid. Transfer to processor and blend until smooth again. Fold in remaining 2 cups of blueberries. Pour into plastic mold and freeze overnight. Let soften slightly to serve."
         },
         {
-            "RecipeId": 40,
+            "RecipeId": 49,
             "Name": "Biryani 2.0",
             "AuthorId": 1533,
             "AuthorName": "Dancer 4",
