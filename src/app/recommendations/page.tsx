@@ -1,5 +1,6 @@
+"use client"
 import { useEffect, useState } from "react";
-import Preloader from "../components/ui/Preloader";
+import Preloader from "../../components/ui/Preloader";
 
 interface Recipe {
   RecipeId: number;
@@ -51,7 +52,6 @@ const RecommendationsPage: React.FC = () => {
               <img
                 src={recipe.Images[0]}
                 alt={recipe.Name}
-                onError={(e) => { e.currentTarget.src = defaultImageUrl; }} // Set default image on error
                 className="w-full h-48 object-cover mb-4 rounded-lg"
               />
             )}
