@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Preloader from "../components/ui/Preloader";
 
 interface Recipe {
   RecipeId: number;
@@ -20,8 +21,7 @@ interface Recipe {
 
 const RecommendationsPage: React.FC = () => {
   const [recommendations, setRecommendations] = useState<Recipe[]>([]);
-  
-  const defaultImageUrl = "default.png"; // Replace with your default image URL
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const storedRecommendations = sessionStorage.getItem('recommendations');
@@ -29,7 +29,12 @@ const RecommendationsPage: React.FC = () => {
       setRecommendations(JSON.parse(storedRecommendations));
       sessionStorage.removeItem('recommendations');
     }
+    setIsLoading(false);
   }, []);
+
+  if (isLoading) {
+    return <Preloader />;
+  }
 
   if (!recommendations.length) {
     return <div className="text-white text-center p-10">No recommendations found.</div>;
