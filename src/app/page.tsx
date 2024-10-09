@@ -5,7 +5,7 @@ import HeroSection from "@/components/HeroSection";
 import InstructionsOfRecipes from "@/components/InstructionsOfRecipes";
 import InstructionTestimonialCards from "@/components/InstructionTestimonialCards";
 import Navbar from "@/components/Navbar";
-import RecipeRecommendationForm from "@/pages/RecommendationsForm";
+import RecipeRecommendationForm from "@/components/recommendationsform";
 
 export default function Home() {
   return (
