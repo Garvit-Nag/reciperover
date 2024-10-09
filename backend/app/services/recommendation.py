@@ -15,7 +15,7 @@ class FlexibleRecipeRecommendationSystem:
         self.data = load_or_create_data(csv_file_path, precomputed_dir, self.feature_weights)
 
     async def get_recommendations(self, category=None, dietary_preference=None, ingredients=None, 
-                                  calories=None, time=None, keywords=None, keywords_name=None, top_n=5):
+                                  calories=None, time=None, keywords=None, keywords_name=None, top_n=6):
         return await get_top_recommendations(
             self.data['df'], self.data['combined_matrix'], 
             self.data['tfidf_vectorizer_ingredients'],
