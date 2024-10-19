@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 from app.models.recipe import Recipe
 import json
 import asyncio
+from ..services.nlp_service import preprocess_text, search_recipes
 
 api_bp = Blueprint('api', __name__)
 
@@ -42,3 +43,19 @@ async def recommend_recipes():  # Make this function async
     )
 
     return jsonify([vars(recipe) for recipe in recommendations])
+
+@api_bp.route('/search', methods=['POST'])
+def search():
+    data = request.json
+    query = data.get('query', '')
+
+    if not query:
+        return jsonify({"error": "No query provided"}), 400
+
+    # Preprocess the search query using NLP techniques
+    preprocessed_query = preprocess_text(query)
+    
+    # Search for recipes based on the query
+    matched_recipes = search_recipes(preprocessed_query)
+    
+    return jsonify({"recipes": matched_recipes}), 200
