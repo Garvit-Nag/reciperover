@@ -34,6 +34,7 @@ const RecipeRecommendationForm: React.FC = () => {
   const [calories, setCalories] = useState(0);
   const [time, setTime] = useState(0);
   const [isMounted, setIsMounted] = useState(false); // New state to track mounting
+  const [protein, setProtein] = useState(0);
 
   const [availableDietaryPreferences, setAvailableDietaryPreferences] = useState<string[]>([]);
   const [availableIngredients, setAvailableIngredients] = useState<string[]>([]);
@@ -359,7 +360,6 @@ const RecipeRecommendationForm: React.FC = () => {
               style={{ background: '#1f2937', borderRadius: '4px', height: '38px' }}
             />
           </div>
-  
           <div className="flex justify-center">
             {/* <Link href={'/recommended_recipes'}> */}
               <button
