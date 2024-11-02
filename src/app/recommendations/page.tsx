@@ -134,8 +134,12 @@ const RecommendationsPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
-      <h1 className="text-5xl font-bold text-center mb-12 text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">Your Recipe Recommendations</h1>
+    <div className="min-h-screen bg-gradient-to-b from-[#0f0f0f] via-[#1c1c1c] to-[#252525] p-8" style={{
+      backgroundImage: `url('/bghai.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+  }}>
+      <h1 className="text-5xl font-bold text-center mb-12 text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">Recipe Recommendations</h1>
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[...Array(6)].map((_, index) => (
@@ -145,10 +149,14 @@ const RecommendationsPage: React.FC = () => {
       ) : recommendations.length === 0 ? (
         <div className="text-white text-center p-10 text-2xl">No recommendations found.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {recommendations.slice(0, 6).map((recipe) => (
-            <RecipeCard key={recipe.RecipeId} recipe={recipe} />
-          ))}
+        <div className="max-w-8xl mx-auto px-6"> {/* Add margins with `mx-auto` and padding with `px-6` */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-5"> {/* Decrease gap between cards */}
+            {recommendations.slice(0, 6).map((recipe) => (
+              <div className="max-w-[450px] w-full mx-auto"> {/* Restrict card width to 300px */}
+                <RecipeCard key={recipe.RecipeId} recipe={recipe} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
