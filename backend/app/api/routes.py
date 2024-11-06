@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, Response, request, jsonify, current_app
 from app.models.recipe import Recipe
 import json
 import asyncio
 from app.services import extraction
+from app.services import image_query 
 
 api_bp = Blueprint('api', __name__)
 
@@ -44,37 +45,107 @@ async def recommend_recipes():  # Make this function async
 
     return jsonify([vars(recipe) for recipe in recommendations])
 
-@api_bp.route('/recommend2', methods=['POST'])
-async def recommend_recipes2():  # Make this function async
-    data = request.json
-    raw_text = data.get('text', '')
-    extracted_info = extraction.extract_recipe_attributes(raw_text, "./recipe_ner_model")
-
-    category = extracted_info.get('category')
-    dietary_preference = extracted_info.get('dietary_preference') # remove
-    ingredients = extracted_info.get('ingredients', [])
-    calories = extracted_info.get('calories')
-    time = extracted_info.get('time')
-    keywords = extracted_info.get('keywords', [])
-    keywords_name = extracted_info.get('keywords_name', [])
-    
+@api_bp.route('/extract-recipe-attributes', methods=['POST'])
+async def recommend_recipes2():
     try:
-        if calories is not None:
-            calories = int(calories)
-        if time is not None:
-            time = int(time)
-    except ValueError:
-        return jsonify({"error": "Calories and time must be integers if provided"}), 400
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
 
-    # Use await to call the async function
-    recommendations = await current_app.recommendation_system.get_recommendations(
-        category=category,
-        dietary_preference=dietary_preference,
-        ingredients=ingredients,
-        calories=calories,
-        time=time,
-        keywords=keywords,
-        keywords_name=keywords_name
-    )
+        raw_text = data.get('text')
+        if not raw_text:
+            return jsonify({"error": "No search text provided"}), 400
 
-    return jsonify([vars(recipe) for recipe in recommendations])
+        # Extract recipe attributes
+        extracted_info = extraction.extract_recipe_attributes(raw_text)  # Call the extraction function
+
+        # Check if extraction was successful
+        if 'error' in extracted_info:
+            return jsonify(extracted_info), 500
+
+        # Access the extracted attributes
+        category = extracted_info.get('category', '')
+        calories = extracted_info.get('calories', None)
+        time = extracted_info.get('time', None)
+        keywords = extracted_info.get('keywords', [])
+        keywords_name = extracted_info.get('keywords_name', [])
+
+        # Convert calories and time to integers if they exist
+        try:
+            calories = int(calories) if calories else None
+            time = int(time) if time else None
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid calories or time value"}), 400
+
+        # Get recommendations using the recommendation system
+        recommendations = await current_app.recommendation_system.get_recommendations(
+            category=category,
+            ingredients=[],  # Adjust if you plan to add ingredients in the extraction function
+            calories=calories,
+            time=time,
+            keywords=keywords,
+            keywords_name=keywords_name
+        )
+
+        # Convert recommendations to JSON-serializable format
+        recipe_list = [vars(recipe) for recipe in recommendations]
+
+        return jsonify(recipe_list)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# searchImage
+@api_bp.route('/analyze-food-image', methods=['POST'])
+async def handle_analyze_food_image():
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided"}), 400
+            
+        file = request.files['image']
+        
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+        
+        # Call the analyze function with the file
+        description = image_query.analyze_food_image(file)
+        
+        # Extract recipe attributes
+        extracted_info = extraction.extract_recipe_attributes(description)  # Call the extraction function
+
+        # Check if extraction was successful
+        if 'error' in extracted_info:
+            return jsonify(extracted_info), 500
+
+        # Access the extracted attributes
+        category = extracted_info.get('category', '')
+        calories = extracted_info.get('calories', None)
+        time = extracted_info.get('time', None)
+        keywords = extracted_info.get('keywords', [])
+        keywords_name = extracted_info.get('keywords_name', [])
+
+        # Convert calories and time to integers if they exist
+        try:
+            calories = int(calories) if calories else None
+            time = int(time) if time else None
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid calories or time value"}), 400
+
+        # Get recommendations using the recommendation system
+        recommendations = await current_app.recommendation_system.get_recommendations(
+            category=category,
+            ingredients=[],  # Adjust if you plan to add ingredients in the extraction function
+            calories=calories,
+            time=time,
+            keywords=keywords,
+            keywords_name=keywords_name
+        )
+
+        # Convert recommendations to JSON-serializable format
+        recipe_list = [vars(recipe) for recipe in recommendations]
+
+        return jsonify(recipe_list)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    

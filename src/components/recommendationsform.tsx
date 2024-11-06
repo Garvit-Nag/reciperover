@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Select from 'react-select';
+import Preloader from "@/components/ui/Preloader";
 import { useRouter } from "next/navigation";
-import Preloader from "../components/ui/Preloader";
-
+import { motion } from "framer-motion";
+import { CookingPot, Clock, Utensils, Flame, ChefHat, UtensilsCrossed } from "lucide-react";
 
 interface FormData {
   categories: string[];
@@ -25,7 +26,6 @@ interface FormData {
 }
 
 const RecipeRecommendationForm: React.FC = () => {
-  // const router = useRouter();
   const router = useRouter();
   const [formData, setFormData] = useState<FormData | null>(null);
   const [category, setCategory] = useState("");
@@ -33,9 +33,8 @@ const RecipeRecommendationForm: React.FC = () => {
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [calories, setCalories] = useState(0);
   const [time, setTime] = useState(0);
-  const [isMounted, setIsMounted] = useState(false); // New state to track mounting
-  const [protein, setProtein] = useState(0);
-
+  const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [availableDietaryPreferences, setAvailableDietaryPreferences] = useState<string[]>([]);
   const [availableIngredients, setAvailableIngredients] = useState<string[]>([]);
   const [calorieRange, setCalorieRange] = useState({ min: 0, max: 1100 });
@@ -45,7 +44,27 @@ const RecipeRecommendationForm: React.FC = () => {
     ? formData.categories.map((cat) => ({ value: cat, label: cat }))
     : [];
 
-  const [isLoading, setIsLoading] = useState(false);
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.5 }
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -54,12 +73,12 @@ const RecipeRecommendationForm: React.FC = () => {
   useEffect(() => {
     async function fetchFormData() {
       try {
-        const response = await fetch("http://127.0.0.1:5000/form-data"); // Fetching from the backend.
+        const response = await fetch("http://127.0.0.1:5000/form-data");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        const data = await response.json(); 
-        setFormData(data); 
+        const data = await response.json();
+        setFormData(data);
       } catch (error) {
         console.error("Error fetching form data:", error);
       }
@@ -95,25 +114,16 @@ const RecipeRecommendationForm: React.FC = () => {
       const mergedIngredients = dietaryPreference.flatMap(
         (preference) => formData.ingredients[category]?.[preference] || []
       );
-      
-      // A Set to ensure unique values.
       const uniqueIngredients = [...new Set(mergedIngredients)];
-      
       setAvailableIngredients(uniqueIngredients);
-      setIngredients([]); 
+      setIngredients([]);
     }
-  }, [category, dietaryPreference, formData]);   
+  }, [category, dietaryPreference, formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted!");
-    
-    if (!isMounted) {
-      return;
-    }
-  
-    setIsLoading(true);  // Show preloader
-    
+    setIsLoading(true);
+
     const formPayload = {
       category,
       dietary_preference: dietaryPreference,
@@ -121,9 +131,7 @@ const RecipeRecommendationForm: React.FC = () => {
       calories,
       time,
     };
-    
-    console.log("Form Payload: ", formPayload);
-  
+
     try {
       const response = await fetch("http://127.0.0.1:5000/recommend", {
         method: "POST",
@@ -132,41 +140,125 @@ const RecipeRecommendationForm: React.FC = () => {
         },
         body: JSON.stringify(formPayload),
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to submit form");
       }
-      
+
       const recommendations = await response.json();
+      
+      // Store recommendations in sessionStorage
       sessionStorage.setItem('recommendations', JSON.stringify(recommendations));
+      
+      // Use router.push to navigate to recommendations page
       router.push('/recommendations');
     } catch (error) {
       console.error("Error submitting the form:", error);
-      setIsLoading(false);  // Hide preloader if there's an error
+      setIsLoading(false);
     }
   };
 
-  if (!formData) {
-    return <div>Loading...</div>;
-  }
+
+  const customSelectStyles = {
+    control: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: "#1a1a1a",
+      color: "#FFFFFF",
+      borderColor: state.isFocused ? "#22c55e" : "#374151",
+      boxShadow: state.isFocused ? "0 0 0 2px rgba(34, 197, 94, 0.2)" : "none",
+      "&:hover": {
+        borderColor: "#22c55e",
+      },
+      transition: "all 0.2s ease",
+      borderRadius: "0.5rem",
+      padding: "1px",
+      minHeight: "36px",
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      backgroundColor: "#1a1a1a",
+      borderRadius: "0.5rem",
+      overflow: "hidden",
+      backdropFilter: "blur(8px)",
+      zIndex: 9999, // Added high z-index to ensure dropdown appears above other elements
+      position: 'absolute', // Ensure absolute positioning
+    }),
+    menuPortal: (base: any) => ({ // Added menuPortal styles
+      ...base,
+      zIndex: 9999
+    }),
+    singleValue: (provided: any) => ({
+      ...provided,
+      color: "#FFFFFF",
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? "#22c55e" : state.isFocused ? "#1F2937" : "#1a1a1a",
+      color: "#FFFFFF",
+      "&:hover": {
+        backgroundColor: "#1F2937",
+      },
+    }),
+    multiValue: (provided: any) => ({
+      ...provided,
+      backgroundColor: "#22c55e",
+      borderRadius: "0.25rem",
+    }),
+    multiValueLabel: (provided: any) => ({
+      ...provided,
+      color: "#FFFFFF",
+      fontSize: "0.875rem",
+    }),
+    multiValueRemove: (provided: any) => ({
+      ...provided,
+      color: "#FFFFFF",
+      "&:hover": {
+        backgroundColor: "#DC2626",
+        color: "#FFFFFF",
+      },
+    }),
+  };
+  
+  
 
   return (
-    <>
-      {isLoading && <Preloader />}
-      <div style={{ background: "#0f172a", padding: "20px" }}>
-        <h3 className="text-base text-teal-400 font-semibold tracking wide uppercase" style={{ textAlign: "center" }}>
-          Recommendation Form
-        </h3>
-        <p className="mt-2 mb-10 text-3xl leading-8 font-extrabold tracking-tight text-white sm:text-4xl my-5" style={{ textAlign: "center" }}>
-          Choose your Recipe 🍵
-        </p>
-        <form
+    <div className="relative">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
+          <Preloader />
+        </div>
+      )}
+    <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="max-w-xl mx-auto"
+      >
+        <div className="text-center mb-6">
+          <motion.h1 
+            className="text-3xl font-bold text-white mb-1"
+            variants={itemVariants}
+          >
+            Your Perfect Recipe Awaits
+          </motion.h1>
+          <motion.p 
+            className="text-green-400 text-base" // Changed to green
+            variants={itemVariants}
+          >
+            Tell us what you're craving today
+          </motion.p>
+        </div>
+
+        <motion.form
           onSubmit={handleSubmit}
-          className="space-y-6 p-6 rounded-lg shadow-md max-w-lg mx-auto bg-neutral-900"
-          style={{color: "white", border: '2px solid white'}}
+          className="space-y-6 backdrop-blur-lg bg-[#1a1a1a] bg-opacity-90 p-5 rounded-xl shadow-2xl border border-gray-800 relative" // Added relative positioning
+          variants={containerVariants}
         >
-          <div>
-            <label htmlFor="category" className="block text-sm text-gray-300">
+          {/* Category Selection */}
+          <motion.div variants={itemVariants} className="form-group">
+            <label className="flex items-center text-white text-sm font-medium mb-1">
+              <ChefHat className="w-4 h-4 mr-2 text-green-400" />
               Category
             </label>
             <Select
@@ -174,205 +266,117 @@ const RecipeRecommendationForm: React.FC = () => {
               value={categoryOptions.find((option) => option.value === category)}
               onChange={(option) => setCategory(option?.value || "")}
               options={categoryOptions}
-              className="mt-2 block w-full"
-              styles={{
-                control: (provided) => ({
-                  ...provided,
-                  backgroundColor: "#1F2937", 
-                  color: "#FFFFFF", 
-                  borderColor: "#6B7280", 
-                  "&:hover": {
-                    borderColor: "#4B5563", 
-                  },
-                }),
-                singleValue: (provided) => ({
-                  ...provided,
-                  color: "#FFFFFF", 
-                }),
-                menu: (provided) => ({
-                  ...provided,
-                  backgroundColor: "#1F2937", 
-                  color: "#FFFFFF", 
-                }),
-                option: (provided, state) => ({
-                  ...provided,
-                  backgroundColor: state.isSelected ? "#374151" : "#1F2937", 
-                  "&:hover": {
-                    backgroundColor: "#374151", 
-                  },
-                  color: "#FFFFFF", 
-                }),
-              }}
-              maxMenuHeight={150} 
+              styles={customSelectStyles}
+              placeholder="Select a category..."
+              menuPortalTarget={document.body} // Add this to render menu in a portal
+              menuPosition="fixed" // Set menu position to fixed
             />
-          </div>
-  
-          <div>
-            <label htmlFor="dietaryPreference" className="block text-sm text-gray-300">
+          </motion.div>
+
+          {/* Dietary Preferences */}
+          <motion.div variants={itemVariants} className="form-group">
+            <label className="flex items-center text-white text-sm font-medium mb-1">
+              <UtensilsCrossed className="w-4 h-4 mr-2 text-green-400" />
               Dietary Preferences
             </label>
             <Select
               id="dietaryPreference"
+              isMulti
               value={availableDietaryPreferences
                 .filter((pref) => dietaryPreference.includes(pref))
-                .map((pref) => ({ value: pref, label: pref }))}  // Map selected options
+                .map((pref) => ({ value: pref, label: pref }))}
               onChange={(options) => setDietaryPreference(options ? options.map((option) => option.value) : [])}
               options={availableDietaryPreferences.map((pref) => ({
                 value: pref,
                 label: pref,
               }))}
-              isMulti // Enables multiple selection.
-              isDisabled={!category} 
-              className="mt-2 block w-full"
-              styles={{
-                control: (provided) => ({
-                  ...provided,
-                  backgroundColor: "#1F2937", 
-                  color: "#FFFFFF", 
-                  borderColor: "#6B7280", 
-                  "&:hover": {
-                    borderColor: "#4B5563", 
-                  },
-                }),
-                multiValue: (provided) => ({
-                  ...provided,
-                  backgroundColor: "#374151",
-                  color: "#FFFFFF",
-                }),
-                multiValueLabel: (provided) => ({
-                  ...provided,
-                  color: "#FFFFFF", 
-                }),
-                multiValueRemove: (provided) => ({
-                  ...provided,
-                  color: "#FFFFFF",
-                  ":hover": {
-                    backgroundColor: "#FF5A5F", 
-                    color: "#FFFFFF",
-                  },
-                }),
-                menu: (provided) => ({
-                  ...provided,
-                  backgroundColor: "#1F2937", 
-                  color: "#FFFFFF", 
-                }),
-                option: (provided, state) => ({
-                  ...provided,
-                  backgroundColor: state.isSelected ? "#374151" : "#1F2937", 
-                  "&:hover": {
-                    backgroundColor: "#374151", 
-                  },
-                  color: "#FFFFFF", 
-                }),
-              }}
+              styles={customSelectStyles}
+              isDisabled={!category}
+              placeholder="Select preferences..."
+              menuPortalTarget={document.body} // Add this to render menu in a portal
+              menuPosition="fixed" // Set menu position to fixed
             />
-          </div>
-  
-          <div>
-            <label htmlFor="ingredients" className="block text-sm text-gray-300">
+          </motion.div>
+
+          {/* Ingredients */}
+          <motion.div variants={itemVariants} className="form-group">
+            <label className="flex items-center text-white text-sm font-medium mb-1">
+              <CookingPot className="w-4 h-4 mr-2 text-green-400" />
               Ingredients
             </label>
             <Select
               id="ingredients"
+              isMulti
               value={availableIngredients
                 .filter((ingredient) => ingredients.includes(ingredient))
-                .map((ingredient) => ({ value: ingredient, label: ingredient }))} 
-              onChange={(options) => setIngredients(options ? options.map((option) => option.value) : [])} 
+                .map((ingredient) => ({ value: ingredient, label: ingredient }))}
+              onChange={(options) => setIngredients(options ? options.map((option) => option.value) : [])}
               options={availableIngredients.map((ingredient) => ({
                 value: ingredient,
                 label: ingredient,
               }))}
-              isMulti
-              isDisabled={!category} 
-              className="mt-2 block w-full"
-              styles={{
-                control: (provided) => ({
-                  ...provided,
-                  backgroundColor: "#1F2937", 
-                  color: "#FFFFFF", 
-                  borderColor: "#6B7280", 
-                  "&:hover": {
-                    borderColor: "#4B5563", 
-                  },
-                }),
-                multiValue: (provided) => ({
-                  ...provided,
-                  backgroundColor: "#374151", 
-                  color: "#FFFFFF",
-                }),
-                multiValueLabel: (provided) => ({
-                  ...provided,
-                  color: "#FFFFFF",
-                }),
-                multiValueRemove: (provided) => ({
-                  ...provided,
-                  color: "#FFFFFF", 
-                  ":hover": {
-                    backgroundColor: "#FF5A5F", 
-                    color: "#FFFFFF",
-                  },
-                }),
-                menu: (provided) => ({
-                  ...provided,
-                  backgroundColor: "#1F2937", 
-                  color: "#FFFFFF", 
-                }),
-                option: (provided, state) => ({
-                  ...provided,
-                  backgroundColor: state.isSelected ? "#374151" : "#1F2937", 
-                  "&:hover": {
-                    backgroundColor: "#374151", 
-                  },
-                  color: "#FFFFFF", 
-                }),
-              }}
-              maxMenuHeight={150} 
+              styles={customSelectStyles}
+              isDisabled={!category}
+              placeholder="Select ingredients..."
+              menuPortalTarget={document.body} // Add this to render menu in a portal
+              menuPosition="fixed" // Set menu position to fixed
             />
-          </div>
-  
-          <div>
-            <label htmlFor="calories" className="block text-sm text-gray-300">
+          </motion.div>
+
+          {/* Calories */}
+          <motion.div variants={itemVariants} className="form-group">
+            <label className="flex items-center text-white text-sm font-medium mb-1">
+              <Flame className="w-4 h-4 mr-2 text-green-400" />
               Calories ({calories})
             </label>
             <input
-              id="calories"
               type="range"
               min={calorieRange.min}
               max={calorieRange.max}
               value={calories}
               onChange={(e) => setCalories(parseInt(e.target.value, 10))}
-              className="mt-2 w-full"
+              className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:bg-green-400"
+              style={{
+                background: `linear-gradient(to right, #22c55e ${(calories - calorieRange.min) / (calorieRange.max - calorieRange.min) * 100}%, #374151 ${(calories - calorieRange.min) / (calorieRange.max - calorieRange.min) * 100}%)`
+              }}
             />
-          </div>
-  
-          <div>
-            <label htmlFor="time" className="block text-sm text-gray-300">
-              Total Time (minutes): 
+          </motion.div>
+
+          {/* Time input */}
+          <motion.div variants={itemVariants} className="form-group">
+            <label className="flex items-center text-white text-sm font-medium mb-1">
+              <Clock className="w-4 h-4 mr-2 text-green-400" />
+              Time (minutes)
             </label>
             <input
               type="number"
-              id="time"
+              value={time === 0 ? "" : time}
+              onChange={(e) => setTime(Number(e.target.value) || 0)}
+              className="w-full px-3 py-1.5 bg-[#1a1a1a] border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200"
+              placeholder="Enter preparation time..."
               min={timeRange.min}
               max={timeRange.max}
-              value={time === 0 ? "" : time} 
-              onChange={(e) => setTime(Number(e.target.value) || 0)} 
-              className="mt-2 block w-full border border-gray-500 text-white py-2 px-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
-              style={{ background: '#1f2937', borderRadius: '4px', height: '38px' }}
             />
-          </div>
-          <div className="flex justify-center">
-            {/* <Link href={'/recommended_recipes'}> */}
-              <button
-                type="submit"
-                className="w-80 py-2 text-white bg-indigo-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:bg-indigo-500 mx-auto"
-              >
-                Get Recommendations
-              </button>
-            {/* </Link> */}
-          </div>
-        </form>
-      </div>
-    </>
+          </motion.div>
+
+          {/* Submit Button */}
+          <motion.div 
+            variants={itemVariants}
+            className="pt-1"
+          >
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-green-500 to-green-700 text-white py-2 rounded-lg font-medium text-sm transition-all duration-300 transform hover:scale-102 hover:shadow-lg flex items-center justify-center space-x-2"
+              disabled={isLoading}
+            >
+              <Utensils className="w-4 h-4" />
+              <span>{isLoading ? "Finding Recipes..." : "Get Recommendations"}</span>
+            </button>
+          </motion.div>
+        </motion.form>
+      </motion.div>
+    </div>
+    </div>
   );
 };
 

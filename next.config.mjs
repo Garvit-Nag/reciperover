@@ -2,6 +2,7 @@
 const nextConfig = {
     images: {
       domains: ['img.sndimg.com'],
+      domains: ['cloud.appwrite.io'],
     },
   };
 

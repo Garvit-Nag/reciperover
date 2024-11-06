@@ -31,7 +31,7 @@ function HeroSection() {
                     Welcome to 'RecipeRover,' we all relish indulging in great dishes, but how many of us take pleasure in watching recipes unfold? Here, we aim to bring you the finest and most popular recipes from around the globe, making it effortless to find that perfect dish without the hassle.
                 </p>
                 <div className="mt-4">
-                    <Link href={'/recipes'}>
+                    <Link href={'/form'}>
                         <Button borderRadius="1.7rem" className="bg-black dark:bg-black text-white dark:text-white">
                             Explore Recipes 
                         </Button>
